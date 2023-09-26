@@ -1,0 +1,24 @@
+config:
+  potSetup:
+    steering:
+      lowerEndpoint: 12
+      upperEndpoint: 23
+      trim: 123
+      invert: true
+    throttle:
+      lowerEndpoint: 12
+      upperEndpoint: 12
+      trim: 123
+      invert: true
+    knob:
+      lowerEndpoint: 12
+      upperEndpoint: 12
+      trim: 123
+      invert: true
+  mapping:
+    steering: wheel
+    throttle: throttle
+    throttleMode: fwd-rev # uses gear 3 for fwd, gear 4 for reverse
+    # fwd-rev - gear 3 / 4, no brakes
+    # fwd-brk-rev - gear 3 / 4, when brakes are applied, it makes sure a min brake is applied until throttle is applied so it doesn't accidentally go into reverse?
+    # real-car - gear 3 / 4, needs extra config to set which button toggles real car mode on transmitter
