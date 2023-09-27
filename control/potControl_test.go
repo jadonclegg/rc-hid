@@ -24,11 +24,11 @@ func TestCreatePotControl(t *testing.T) {
 func Test8BitInput(t *testing.T) {
 	control := NewPotControl(8, 12)
 
-	testGetOutputParams(t, 255, 4095, UPPER_HALF, control)
-	testGetOutputParams(t, 0, 4095/2, UPPER_HALF, control)
+	testGetOutputParams(t, 255, 4095, UpperHalf, control)
+	testGetOutputParams(t, 0, 4095/2, UpperHalf, control)
 
-	testGetOutputParams(t, 255, 0, LOWER_HALF, control)
-	testGetOutputParams(t, 0, 4095/2, LOWER_HALF, control)
+	testGetOutputParams(t, 255, 0, LowerHalf, control)
+	testGetOutputParams(t, 0, 4095/2, LowerHalf, control)
 }
 
 func TestGetOutput(t *testing.T) {
@@ -37,60 +37,60 @@ func TestGetOutput(t *testing.T) {
 
 	control := NewPotControl(16, 12)
 
-	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(midpointInput, FULL_WIDTH))
+	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(midpointInput, FullWidth))
 
-	checkUint16OutputValue(t, 4095, control.GetOutputValue(65535, FULL_WIDTH))
+	checkUint16OutputValue(t, 4095, control.GetOutputValue(65535, FullWidth))
 
-	checkUint16OutputValue(t, 0, control.GetOutputValue(0, FULL_WIDTH))
+	checkUint16OutputValue(t, 0, control.GetOutputValue(0, FullWidth))
 
-	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(0, UPPER_HALF))
-	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(0, LOWER_HALF))
+	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(0, UpperHalf))
+	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(0, LowerHalf))
 
-	checkUint16OutputValue(t, 4095, control.GetOutputValue(65535, UPPER_HALF))
-	checkUint16OutputValue(t, 0, control.GetOutputValue(65535, LOWER_HALF))
+	checkUint16OutputValue(t, 4095, control.GetOutputValue(65535, UpperHalf))
+	checkUint16OutputValue(t, 0, control.GetOutputValue(65535, LowerHalf))
 
 	control.SetEndpoints(1000, 3900, 0)
 
-	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(midpointInput, FULL_WIDTH))
+	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(midpointInput, FullWidth))
 
-	checkUint16OutputValue(t, 3900, control.GetOutputValue(65535, FULL_WIDTH))
+	checkUint16OutputValue(t, 3900, control.GetOutputValue(65535, FullWidth))
 
-	checkUint16OutputValue(t, 1000, control.GetOutputValue(0, FULL_WIDTH))
+	checkUint16OutputValue(t, 1000, control.GetOutputValue(0, FullWidth))
 
-	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(0, UPPER_HALF))
-	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(0, LOWER_HALF))
+	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(0, UpperHalf))
+	checkUint16OutputValue(t, midpointOutput, control.GetOutputValue(0, LowerHalf))
 
-	checkUint16OutputValue(t, 3900, control.GetOutputValue(65535, UPPER_HALF))
-	checkUint16OutputValue(t, 1000, control.GetOutputValue(65535, LOWER_HALF))
+	checkUint16OutputValue(t, 3900, control.GetOutputValue(65535, UpperHalf))
+	checkUint16OutputValue(t, 1000, control.GetOutputValue(65535, LowerHalf))
 
 	control.SetEndpoints(1000, 3900, -12)
 
-	checkUint16OutputValue(t, midpointOutput-12, control.GetOutputValue(midpointInput, FULL_WIDTH))
-	checkUint16OutputValue(t, midpointOutput-12, control.GetOutputValue(0, LOWER_HALF))
-	checkUint16OutputValue(t, midpointOutput-12, control.GetOutputValue(0, UPPER_HALF))
+	checkUint16OutputValue(t, midpointOutput-12, control.GetOutputValue(midpointInput, FullWidth))
+	checkUint16OutputValue(t, midpointOutput-12, control.GetOutputValue(0, LowerHalf))
+	checkUint16OutputValue(t, midpointOutput-12, control.GetOutputValue(0, UpperHalf))
 
 	control.SetEndpoints(12, 1800, -1000)
 
-	checkUint16OutputValue(t, midpointOutput-1000, control.GetOutputValue(midpointInput, FULL_WIDTH))
-	checkUint16OutputValue(t, midpointOutput-1000, control.GetOutputValue(0, LOWER_HALF))
-	checkUint16OutputValue(t, midpointOutput-1000, control.GetOutputValue(0, UPPER_HALF))
+	checkUint16OutputValue(t, midpointOutput-1000, control.GetOutputValue(midpointInput, FullWidth))
+	checkUint16OutputValue(t, midpointOutput-1000, control.GetOutputValue(0, LowerHalf))
+	checkUint16OutputValue(t, midpointOutput-1000, control.GetOutputValue(0, UpperHalf))
 
-	checkUint16OutputValue(t, 1423, control.GetOutputValue(49151, FULL_WIDTH))
-	checkUint16OutputValue(t, 529, control.GetOutputValue(16383, FULL_WIDTH))
+	checkUint16OutputValue(t, 1423, control.GetOutputValue(49151, FullWidth))
+	checkUint16OutputValue(t, 529, control.GetOutputValue(16383, FullWidth))
 
 	control.Invert = true
 	control.SetEndpoints(0, 4095, 0)
 
 	invertedMidpoint := uint16(2048)
-	checkUint16OutputValue(t, invertedMidpoint, control.GetOutputValue(0, UPPER_HALF))
-	checkUint16OutputValue(t, invertedMidpoint, control.GetOutputValue(0, LOWER_HALF))
-	checkUint16OutputValue(t, invertedMidpoint, control.GetOutputValue(midpointInput, FULL_WIDTH))
+	checkUint16OutputValue(t, invertedMidpoint, control.GetOutputValue(0, UpperHalf))
+	checkUint16OutputValue(t, invertedMidpoint, control.GetOutputValue(0, LowerHalf))
+	checkUint16OutputValue(t, invertedMidpoint, control.GetOutputValue(midpointInput, FullWidth))
 
-	checkUint16OutputValue(t, 0, control.GetOutputValue(65535, FULL_WIDTH))
-	checkUint16OutputValue(t, 4095, control.GetOutputValue(0, FULL_WIDTH))
+	checkUint16OutputValue(t, 0, control.GetOutputValue(65535, FullWidth))
+	checkUint16OutputValue(t, 4095, control.GetOutputValue(0, FullWidth))
 
-	checkUint16OutputValue(t, 0, control.GetOutputValue(65535, UPPER_HALF))
-	checkUint16OutputValue(t, 4095, control.GetOutputValue(65535, LOWER_HALF))
+	checkUint16OutputValue(t, 0, control.GetOutputValue(65535, UpperHalf))
+	checkUint16OutputValue(t, 4095, control.GetOutputValue(65535, LowerHalf))
 
 	control.SetEndpoints(193, 2890, 0)
 }
@@ -101,7 +101,7 @@ func checkUint16OutputValue(t *testing.T, expectedOutput, actualOutput uint16) {
 	}
 }
 
-func testGetOutputParams(t *testing.T, inputValue, expectedOutput uint16, controlRange ControlRange, c *PotControl) {
+func testGetOutputParams(t *testing.T, inputValue, expectedOutput uint16, controlRange Range, c *PotControl) {
 	actualOutput := c.GetOutputValue(inputValue, controlRange)
 
 	if expectedOutput != actualOutput {

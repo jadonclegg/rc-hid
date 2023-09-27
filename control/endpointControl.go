@@ -29,6 +29,7 @@ func newEndpointInfo(resolution uint16) *endpointInfo {
 	return info
 }
 
+// SetEndpoints allows you to specify the min, and max output values that should be used, and lets you adjust where the middle of those values is with trim.
 func (info *endpointInfo) SetEndpoints(lower, upper uint16, trim int) {
 	info.lowerEndpoint = lower
 	info.upperEndpoint = upper
@@ -58,7 +59,7 @@ func adjustValueForEndpoints(value uint16, info endpointInfo) uint16 {
 
 	if value > uint16(info.halfMaxOutput) {
 		return uint16((float64(value)-info.halfMaxOutput)*info.upperRatio + info.outputMidPoint)
-	} else {
-		return uint16(info.outputMidPoint - ((info.halfMaxOutput - float64(value)) * info.lowerRatio))
 	}
+
+	return uint16(info.outputMidPoint - ((info.halfMaxOutput - float64(value)) * info.lowerRatio))
 }

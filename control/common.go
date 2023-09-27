@@ -1,16 +1,14 @@
 package control
 
-const FREQUENCY = 50 // hz
-const MIN_US = 500   // .5ms pulse
-const MAX_US = 2500  // 2.5ms pulse
+// Range is used for controlling the range of the output that you want to use from your input.
+type Range int
 
-// 20 ms
-const PERIOD = 1000000 / FREQUENCY // microseconds in each period
-
-const MAX_DUTY_CYCLE = 65535 * MAX_US / PERIOD
-const MIN_DUTY_CYCLE = 65535 * MIN_US / PERIOD
-const DUTY_CYCLE_RANGE = MAX_DUTY_CYCLE - MIN_DUTY_CYCLE
-const HALF_DUTY_CYCLE_RANGE = DUTY_CYCLE_RANGE / 2
+// Control Ranges for outputs. Full width maps the input to the full range of the output, lowerhalf maps it to the lower half of the range, starting at the middle, and upper half does the upper half of the range, also starting at the middle.
+const (
+	FullWidth Range = 0
+	LowerHalf Range = 1
+	UpperHalf Range = 2
+)
 
 type trimmableControl interface {
 	getTrim() int

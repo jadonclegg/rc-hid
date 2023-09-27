@@ -8,15 +8,16 @@ import (
 	"github.com/sstallion/go-hid"
 )
 
-const SteeringOffset = 4
-const GasOffset = SteeringOffset + 2
-const BrakeOffset = GasOffset + 1
-const ClutchOffset = BrakeOffset + 1
+const steeringOffset = 4
+const gasOffset = steeringOffset + 2
+const brakeOffset = gasOffset + 1
+const clutchOffset = brakeOffset + 1
 
-const VendorID = 0x046d
-const ProductID = 0xc24F
-const Neutral = 32768
+const vendorID = 0x046d
+const productID = 0xc24F
+const neutral = 32768
 
+// WheelInput contains all of the input information coming from the wheel.
 type WheelInput struct {
 	Throttle uint16
 	Brake    uint16
@@ -32,6 +33,8 @@ type buttonListener struct {
 	btn     button.Button
 }
 
+// Wheel contains information about the g29 wheel, and contains the WheelInput object for getting input values.
+// AutoCenterScale is used to control the strength of the auto centering feature.
 type Wheel struct {
 	Input           *WheelInput
 	hidDevice       *hid.Device
@@ -39,18 +42,19 @@ type Wheel struct {
 	buttonListeners []*buttonListener
 }
 
+// NewWheel is used to open and initialize the steering wheel. Returns an error if something went wrong.
 func NewWheel() (*Wheel, error) {
 	wheel := &Wheel{}
 	wheel.Input = &WheelInput{
 		Brake:    0,
 		Throttle: 0,
 		Gear:     0,
-		Steering: Neutral,
+		Steering: neutral,
 	}
 
 	wheel.buttonListeners = make([]*buttonListener, 0)
 
-	device, err := hid.OpenFirst(VendorID, ProductID)
+	device, err := hid.OpenFirst(vendorID, productID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +63,10 @@ func NewWheel() (*Wheel, error) {
 	return wheel, nil
 }
 
+// ButtonAction is a function that is called on a button press, and just passes the wheel object into the function that had the event.
 type ButtonAction func(w *Wheel)
 
+// OnButtonPress calls the passed in ButtonAction whenever the specified button is pressed.
 func (w *Wheel) OnButtonPress(btn button.Button, action ButtonAction) {
 	listener := &buttonListener{
 		lastVal: false,
@@ -71,29 +77,30 @@ func (w *Wheel) OnButtonPress(btn button.Button, action ButtonAction) {
 	w.buttonListeners = append(w.buttonListeners, listener)
 }
 
-func (wheel *Wheel) GetInput() {
-	wheel.Input.raw = make([]byte, 12)
-	wheel.Input.raw[0] = 0x01
-	buff := wheel.Input.raw
+// GetInput runs forever and constantly reads input from the device, and stores the information in the wheel.Input field.
+func (w *Wheel) GetInput() {
+	w.Input.raw = make([]byte, 12)
+	w.Input.raw[0] = 0x01
+	buff := w.Input.raw
 
 	for {
-		read, err := wheel.hidDevice.Read(buff)
+		read, err := w.hidDevice.Read(buff)
 		if err != nil {
 			panic(err)
 		}
 
 		if read > 0 {
-			wheel.Input.Steering = getUint16FromByteArray(buff, SteeringOffset, false)
-			wheel.Input.Throttle = getUint8FromByteArrayAsUint16(buff, GasOffset, true)
-			wheel.Input.Brake = getUint8FromByteArrayAsUint16(buff, BrakeOffset, true)
-			wheel.Input.Clutch = getUint8FromByteArrayAsUint16(buff, ClutchOffset, true)
-			wheel.Input.Gear = buff[button.FirstGear.Offset]
+			w.Input.Steering = getUint16FromByteArray(buff, steeringOffset, false)
+			w.Input.Throttle = getUint8FromByteArrayAsUint16(buff, gasOffset, true)
+			w.Input.Brake = getUint8FromByteArrayAsUint16(buff, brakeOffset, true)
+			w.Input.Clutch = getUint8FromByteArrayAsUint16(buff, clutchOffset, true)
+			w.Input.Gear = buff[button.FirstGear.Offset]
 
-			for _, listener := range wheel.buttonListeners {
-				if wheel.ButtonPressed(listener.btn) {
+			for _, listener := range w.buttonListeners {
+				if w.ButtonPressed(listener.btn) {
 					if !listener.lastVal {
 						listener.lastVal = true
-						listener.action(wheel)
+						listener.action(w)
 					}
 				} else {
 					listener.lastVal = false
@@ -102,34 +109,34 @@ func (wheel *Wheel) GetInput() {
 
 			const maxForce = 60
 
-			if wheel.AutoCenterScale > 0 {
+			if w.AutoCenterScale > 0 {
 				force := uint8(127)
 
 				center := uint16(65535 / 2)
-				distFromCenter := float64(wheel.Input.Steering) - float64(center)
+				distFromCenter := float64(w.Input.Steering) - float64(center)
 				power := float64(0)
 
-				if wheel.Input.Gear == button.ThirdGear.ByteVal {
+				if w.Input.Gear == button.ThirdGear.Flag {
 					ratio := math.Min(1, math.Max(-1, float64(distFromCenter)/float64(center)*4))
-					throttle := float64(wheel.Input.Throttle) * .5
-					power = math.Max(-maxForce, math.Min(maxForce, float64(throttle)*ratio*wheel.AutoCenterScale))
+					throttle := float64(w.Input.Throttle) * .5
+					power = math.Max(-maxForce, math.Min(maxForce, float64(throttle)*ratio*w.AutoCenterScale))
 				}
 
 				force = 127 + uint8(power)
 
-				wheel.SetConstantForce(force)
+				w.SetConstantForce(force)
 			}
 		}
 	}
 }
 
 func getUint16FromByteArray(buff []byte, offset int, invert bool) uint16 {
-	byte_0 := buff[offset]
-	byte_1 := buff[offset+1]
+	byte0 := buff[offset]
+	byte1 := buff[offset+1]
 
 	value := uint16(0)
-	value += (uint16(byte_1) << 8)
-	value += uint16(byte_0)
+	value += (uint16(byte1) << 8)
+	value += uint16(byte0)
 
 	if invert {
 		return 65535 - value
@@ -147,6 +154,7 @@ func getUint8FromByteArrayAsUint16(buff []byte, offset int, invert bool) uint16 
 	return value
 }
 
+// SetRange lets you specify how many degrees of rotation you want the wheel to have, anywhere from 40 to 900 degrees.
 func (w *Wheel) SetRange(degrees uint16) {
 	if degrees < 40 {
 		degrees = 40
@@ -163,19 +171,23 @@ func (w *Wheel) SetRange(degrees uint16) {
 	w.hidDevice.Write(bytes)
 }
 
+// SetFrictionForce enables the friction force feedback of the wheel, to enable a constant resistance to turning the wheel. Values are 0-F
 func (w *Wheel) SetFrictionForce(value uint8) {
 	bytes := []byte{0x00, 0x21, 0x02, byte(value), 0x00, byte(value), 0x00, 0x00}
 	w.hidDevice.Write(bytes)
 }
 
+// SetConstantForce tells the wheel to enable a constant force feedback. Values between 0-127 turn the wheel left, with 0 being the strongest feedback,
+// while values from 128-255 turn the wheel to the right, with 255 being the strongest feedback.
 func (w *Wheel) SetConstantForce(value uint8) {
 	bytes := []byte{0x00, 0x11, 0x00, byte(value), 0x00, 0x00, 0x00, 0x00}
 	w.hidDevice.Write(bytes)
 }
 
+// ButtonPressed lets you check if a specific button is being pressed currently.
 func (w *Wheel) ButtonPressed(button button.Button) bool {
 	val := w.Input.raw[button.Offset]
-	if val&button.ByteVal == button.ByteVal {
+	if val&button.Flag == button.Flag {
 		return true
 	}
 

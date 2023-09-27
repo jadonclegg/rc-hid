@@ -68,15 +68,15 @@ func main() {
 		time.Sleep(time.Millisecond * 15)
 
 		var thrOutput uint16
-		strOutput := strControl.GetOutputValue(wheel.Input.Steering, control.FULL_WIDTH)
-		vrOutput := vrControl.GetOutputValue(wheel.Input.Steering, control.FULL_WIDTH)
+		strOutput := strControl.GetOutputValue(wheel.Input.Steering, control.FullWidth)
+		vrOutput := vrControl.GetOutputValue(wheel.Input.Steering, control.FullWidth)
 
-		if wheel.Input.Gear == g29button.ThirdGear.ByteVal {
-			thrOutput = thrControl.GetOutputValue(wheel.Input.Throttle, control.UPPER_HALF)
-		} else if wheel.Input.Gear == g29button.FourthGear.ByteVal {
-			thrOutput = thrControl.GetOutputValue(wheel.Input.Throttle, control.LOWER_HALF)
+		if wheel.Input.Gear == g29button.ThirdGear.Flag {
+			thrOutput = thrControl.GetOutputValue(wheel.Input.Throttle, control.UpperHalf)
+		} else if wheel.Input.Gear == g29button.FourthGear.Flag {
+			thrOutput = thrControl.GetOutputValue(wheel.Input.Throttle, control.LowerHalf)
 		} else {
-			thrOutput = thrControl.GetOutputValue(0, control.UPPER_HALF)
+			thrOutput = thrControl.GetOutputValue(0, control.UpperHalf)
 		}
 
 		var buttons uint16

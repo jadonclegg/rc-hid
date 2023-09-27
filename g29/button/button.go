@@ -1,8 +1,9 @@
 package button
 
+// Button is used to map which buttons are where on the g29 wheel, and what part of the input byte array they are.
 type Button struct {
-	ByteVal byte
-	Offset  int
+	Flag   byte
+	Offset int
 }
 
 // Buttons
